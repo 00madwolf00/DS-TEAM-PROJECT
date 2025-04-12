@@ -20,10 +20,10 @@ public:
     void addAirport(const AirportNode& ap);
     void addFlight(string origin, const Edge& edge);
 
-    int findAirportIndex(string code) const;
+    int getAirportIndex(string code) const;
     bool airportExists(string code) const;
 
-    void printGraph() const;
+    void displayGraph() const;
     
 };
 
