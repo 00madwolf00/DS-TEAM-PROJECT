@@ -1,5 +1,6 @@
 #ifndef GRAPH_H
 #define GRAPH_H
+using namespace std;
 
 #include "AirportNode.h"
 #include "Edge.h"
