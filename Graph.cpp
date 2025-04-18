@@ -38,7 +38,7 @@ void Graph::addFlight(string origin, string destination, double distance, double
     }
 }
 
-void Graph::printGraph() const {
+void Graph::displayGraph() const {
     for (int i = 0; i < adjacencyList.size(); ++i) {
         cout << adjacencyList[i].airport.name << " -> ";
         for (auto& edge : adjacencyList[i].edges) {

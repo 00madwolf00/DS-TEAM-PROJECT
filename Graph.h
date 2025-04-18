@@ -18,8 +18,8 @@ private:
 public:
     Graph();
 
-    void addAirport(const AirportNode& ap);
-    void addFlight(string origin, const Edge& edge);
+    void addAirport(const string& code) ;
+    void addFlight(string origin, string destination, double distance, double cost);
 
     int getAirportIndex(string code) const;
     bool airportExists(string code) const;
