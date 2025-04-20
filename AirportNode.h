@@ -52,7 +52,7 @@ public:
          state = s; }
     // Edge
     void addEdge(Edge* edge) { outgoingEdges.push_back(edge); }
-    vector<Edge*>& getEdges() { return outgoingEdges; }
+    const vector<Edge*>& getEdges() const; 
 
     bool operator==(const AirportNode& other){
         return code == other.code;

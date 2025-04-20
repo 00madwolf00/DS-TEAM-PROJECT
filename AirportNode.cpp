@@ -9,5 +9,6 @@ AirportNode::~AirportNode(){
 
     outgoingEdges.clear();
 }
-
-
+const vector<Edge*>& AirportNode::getEdges() const {
+    return outgoingEdges;
+}

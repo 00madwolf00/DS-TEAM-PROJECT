@@ -4,6 +4,8 @@
 #include <stack>
 #include <queue>
 #include <unordered_map>
+#include <functional>
+#include <algorithm>
 
 Graph::Graph() {}
 
@@ -124,4 +126,165 @@ void Graph::dijkstra(string start, string end, bool useCost) {
     }
 
     cout << "\nTotal " << (useCost ? "cost" : "distance") << ": " << dist[endNode] << "\n";
+}
+void Graph::dijkstraToState(const string& originCode, const string& stateCode, bool useCost) {
+    AirportNode* origin = getAirport(originCode);
+    if (!origin) {
+        cout << "Origin airport not found.\n";
+        return;
+    }
+
+    unordered_map<AirportNode*, double> dist;
+    unordered_map<AirportNode*, AirportNode*> prev;
+    unordered_map<AirportNode*, bool> visited;
+
+    for (auto* airport : adjacencyList) {
+        dist[airport] = numeric_limits<double>::infinity();
+        prev[airport] = nullptr;
+        visited[airport] = false;
+    }
+
+    dist[origin] = 0;
+
+    while (true) {
+        AirportNode* current = nullptr;
+        double minDist = numeric_limits<double>::infinity();
+
+        for (auto* airport : adjacencyList) {
+            if (!visited[airport] && dist[airport] < minDist) {
+                minDist = dist[airport];
+                current = airport;
+            }
+        }
+
+        if (!current) break;
+        visited[current] = true;
+
+        for (Edge* edge : current->getEdges()) {
+            AirportNode* neighbor = edge->to;
+            double weight = useCost ? edge->cost : edge->distance;
+            if (dist[current] + weight < dist[neighbor]) {
+                dist[neighbor] = dist[current] + weight;
+                prev[neighbor] = current;
+            }
+        }
+    }
+
+    // Output paths to airports in matching state
+    bool found = false;
+    for (auto* airport : adjacencyList) {
+        if (airport == origin) continue;
+        if (airport->getState() == stateCode && dist[airport] < numeric_limits<double>::infinity()) {
+            found = true;
+            stack<AirportNode*> path;
+            for (AirportNode* at = airport; at != nullptr; at = prev[at])
+                path.push(at);
+
+            cout << "\nPath to " << airport->getCode() << " (" << airport->getCity() << ", " << airport->getState() << "): ";
+            while (!path.empty()) {
+                cout << path.top()->getCode();
+                path.pop();
+                if (!path.empty()) cout << " -> ";
+            }
+
+            cout << "\nTotal " << (useCost ? "cost" : "distance") << ": " << dist[airport] << "\n";
+        }
+    }
+
+    if (!found) {
+        cout << "No reachable airports found in state " << stateCode << ".\n";
+    }
+}
+void Graph::shortestPathWithStops(string originCode, string destCode, int stops, bool useCost) {
+    AirportNode* origin = getAirport(originCode);
+    AirportNode* destination = getAirport(destCode);
+
+    if (!origin || !destination) {
+        cout << "Origin or destination not found.\n";
+        return;
+    }
+
+    double bestValue = numeric_limits<double>::infinity();
+    vector<AirportNode*> bestPath;
+
+    function<void(AirportNode*, int, double, vector<AirportNode*>&)> dfs;
+    dfs = [&](AirportNode* current, int remainingStops, double currentValue, vector<AirportNode*>& path) {
+        path.push_back(current);
+
+        if (remainingStops == 0) {
+            if (current == destination && currentValue < bestValue) {
+                bestValue = currentValue;
+                bestPath = path;
+            }
+            path.pop_back();
+            return;
+        }
+
+        for (Edge* edge : current->getEdges()) {
+            double nextValue = currentValue + (useCost ? edge->cost : edge->distance);
+            dfs(edge->to, remainingStops - 1, nextValue, path);
+        }
+
+        path.pop_back();
+    };
+
+    vector<AirportNode*> path;
+    dfs(origin, stops, 0, path);
+
+    if (bestPath.empty()) {
+        cout << "No path from " << originCode << " to " << destCode << " with exactly " << stops << " stops.\n";
+        return;
+    }
+
+    cout << "Best path from " << originCode << " to " << destCode
+         << " with exactly " << stops << " stops:\n";
+
+    for (size_t i = 0; i < bestPath.size(); ++i) {
+        cout << bestPath[i]->getCode();
+        if (i + 1 < bestPath.size()) cout << " -> ";
+    }
+
+    cout << "\nTotal " << (useCost ? "cost" : "distance") << ": " << bestValue << "\n";
+}
+void Graph::displayConnectionStats() const {
+    struct Stat {
+        string code;
+        int inbound = 0;
+        int outbound = 0;
+
+        int total() const { return inbound + outbound; }
+    };
+
+    unordered_map<string, Stat> stats;
+
+    // First pass: initialize stats
+    for (const auto* airport : adjacencyList) {
+        string code = airport->getCode();
+        stats[code] = { code, 0, static_cast<int>(airport->getEdges().size()) };
+    }
+
+    // Second pass: count inbound connections
+    for (const auto* airport : adjacencyList) {
+        for (Edge* edge : airport->getEdges()) {
+            string destCode = edge->to->getCode();
+            stats[destCode].inbound++;
+        }
+    }
+
+    // Move to vector and sort
+    vector<Stat> result;
+    for (const auto& pair : stats) {
+        result.push_back(pair.second);
+    }
+
+    sort(result.begin(), result.end(), [](const Stat& a, const Stat& b) {
+        return a.total() > b.total();  // sort by total connections descending
+    });
+
+    // Print
+    cout << "\n=== Airport Connection Stats ===\n";
+    cout << "Code\tInbound\tOutbound\tTotal\n";
+    for (const Stat& s : result) {
+        cout << s.code << "\t" << s.inbound << "\t" << s.outbound << "\t\t" << s.total() << "\n";
+    }
 }

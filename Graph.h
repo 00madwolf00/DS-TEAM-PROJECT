@@ -18,6 +18,8 @@ private:
 public:
     Graph();
     ~Graph();
+    void shortestPathWithStops(string originCode, string destCode, int stops, bool useCost);
+    void displayConnectionStats() const;
 
     void addAirport(const string& code) ;
     void addFlight(string origin, string destination, double distance, double cost);
@@ -27,6 +29,8 @@ public:
 
     void displayGraph() const;
     void dijkstra(string start, string end, bool useCost);
+    void dijkstraToState(const string& originCode, const string& stateCode, bool useCost);
+
 
     void loadFromCSV(const string& filename);
 
