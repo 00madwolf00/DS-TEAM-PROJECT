@@ -2,7 +2,7 @@
 * CSVRead.cpp
 * Names: Allicyan Chin, Jaheem Clayton, Jasmine Heymann
 * Course: COP-3415
-* Last Modified: 04/19/2025
+* Last Modified: 04/20/2025
 */
 
 #include "CSVRead.h"
@@ -12,10 +12,10 @@
 
 using namespace std;
 
-bool CSVReader::loadAirportsCSV(const string& filename, Graph& graph) {
+bool CSVReader::loadAirportsCSV(const string& filename, Graph& graph){
     ifstream file(filename);
     
-    if (!file.is_open()) {
+    if(!file.is_open()){
         cerr << "Error: Could not open file " << filename << endl;
         return false;
     }
@@ -24,24 +24,24 @@ bool CSVReader::loadAirportsCSV(const string& filename, Graph& graph) {
     getline(file, line); // skip header
     int lineCount = 0;
 
-    while (getline(file, line)) {
+    while(getline(file, line)){
         lineCount++;
 
         stringstream ss(line);
         string fields[6];
-        for (int i = 0; i < 6 && getline(ss, fields[i], ','); ++i) {
+        for(int i = 0; i < 6 && getline(ss, fields[i], ','); i++){
             // Handle quoted field that contains commas
-            if (!fields[i].empty() && fields[i][0] == '"' && fields[i].back() != '"') {
+            if(!fields[i].empty() && fields[i][0] == '"' && fields[i].back() != '"'){
                 string continuation;
-                while (getline(ss, continuation, ',')) {
+                while(getline(ss, continuation, ',')){
                     fields[i] += "," + continuation;
-                    if (!continuation.empty() && continuation.back() == '"') break;
+                    if(!continuation.empty() && continuation.back() == '"') break;
                 }
             }
 
             // Strip surrounding quotes if present
-            if (!fields[i].empty() && fields[i].front() == '"') fields[i] = fields[i].substr(1);
-            if (!fields[i].empty() && fields[i].back() == '"') fields[i].pop_back();
+            if(!fields[i].empty() && fields[i].front() == '"') fields[i] = fields[i].substr(1);
+            if(!fields[i].empty() && fields[i].back() == '"') fields[i].pop_back();
         }
 
         string origin      = fields[0];
@@ -54,10 +54,10 @@ bool CSVReader::loadAirportsCSV(const string& filename, Graph& graph) {
         int distance = 0;
         int cost = 0;
 
-        try {
+        try{
             distance = stoi(distStr);
             cost = stoi(costStr);
-        } catch (const exception& e) {
+        }catch(const exception& e){
             cerr << "Error reading line " << lineCount << ": " << e.what() << endl;
             cerr << "  distance: '" << distStr << "', cost: '" << costStr << "'" << endl;
             cerr << "  Error: " << e.what() << endl;
