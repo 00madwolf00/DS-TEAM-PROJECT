@@ -26,7 +26,7 @@ bool CSVReader::loadAirportsCSV(const std::string& filename, Graph<string>& grap
     
     int lineCount = 0;
     
-    while (getline(file, line)){
+    while(getline(file, line)){
         lineCount++;
 
         stringstream ss(line);
@@ -61,7 +61,7 @@ bool CSVReader::loadAirportsCSV(const std::string& filename, Graph<string>& grap
         try{
             distance = stoi(distStr);
             cost = stoi(costStr);
-        }catch (const exception& e){
+        }catch(const exception& e){
             cerr << "Error reading line " << lineCount << ": " << e.what() << endl;
             continue;
         }
@@ -77,7 +77,7 @@ bool CSVReader::loadAirportsCSV(const std::string& filename, Graph<string>& grap
         
         try{
             graph.add_edge(v_origin, v_dest, distance, cost);
-        }catch (const string& e){
+        }catch(const string& e){
             cerr << "Error adding the flight: " << e << endl;
         }
     }
