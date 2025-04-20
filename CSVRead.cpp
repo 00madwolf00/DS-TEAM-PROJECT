@@ -28,14 +28,28 @@ bool CSVReader::loadAirportsCSV(const string& filename, Graph& graph) {
         lineCount++;
 
         stringstream ss(line);
-        string origin, destination, originCity, destCity, distStr, costStr;
+        string fields[6];
+        for (int i = 0; i < 6 && getline(ss, fields[i], ','); ++i) {
+            // Handle quoted field that contains commas
+            if (!fields[i].empty() && fields[i][0] == '"' && fields[i].back() != '"') {
+                string continuation;
+                while (getline(ss, continuation, ',')) {
+                    fields[i] += "," + continuation;
+                    if (!continuation.empty() && continuation.back() == '"') break;
+                }
+            }
 
-        getline(ss, origin, ',');
-        getline(ss, destination, ',');
-        getline(ss, originCity, ',');
-        getline(ss, destCity, ',');
-        getline(ss, distStr, ',');
-        getline(ss, costStr, ',');
+            // Strip surrounding quotes if present
+            if (!fields[i].empty() && fields[i].front() == '"') fields[i] = fields[i].substr(1);
+            if (!fields[i].empty() && fields[i].back() == '"') fields[i].pop_back();
+        }
+
+        string origin      = fields[0];
+        string destination = fields[1];
+        string originCity  = fields[2];
+        string destCity    = fields[3];
+        string distStr     = fields[4];
+        string costStr     = fields[5];
 
         int distance = 0;
         int cost = 0;
@@ -45,6 +59,8 @@ bool CSVReader::loadAirportsCSV(const string& filename, Graph& graph) {
             cost = stoi(costStr);
         } catch (const exception& e) {
             cerr << "Error reading line " << lineCount << ": " << e.what() << endl;
+            cerr << "  distance: '" << distStr << "', cost: '" << costStr << "'" << endl;
+            cerr << "  Error: " << e.what() << endl;
             continue;
         }
 

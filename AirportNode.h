@@ -47,10 +47,7 @@ public:
     }
 
     // Edge
-    void addEdge(AirportNode* destination, double distance, double cost);
-    vector<Edge*>& getEdges(){
-        return outgoingEdges;
-    }
+
 
     bool operator==(const AirportNode& other){
         return code == other.code;

@@ -11,7 +11,4 @@ AirportNode::~AirportNode(){
     outgoingEdges.clear();
 }
 
-void AirportNode::addEdge(AirportNode* destination, double distance, double cost){
-    Edge* newEdge = new Edge(destination, distance, cost);
-    outgoingEdges.push_back(newEdge);
-}
+

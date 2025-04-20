@@ -1,12 +1,13 @@
 #include <iostream>
 #include "Graph.h"
+#include "CSVRead.h"
 
 using namespace std;
 
 int main() {
     Graph g;
 
-    g.loadFromCSV("airports.csv");
+    CSVReader::loadAirportsCSV("airports.csv", g);
 
     
 
