@@ -13,7 +13,7 @@
 
 using namespace std;
 
-class CSVReader {
+class CSVReader{
 public:
     static bool loadAirportsCSV(const string& filename, AirportGraph& graph);
 };
