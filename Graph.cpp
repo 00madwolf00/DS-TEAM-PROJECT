@@ -2,114 +2,126 @@
 #include <iostream>
 #include <limits>
 #include <stack>
-#include <fstream>
-#include <sstream>
+#include <queue>
+#include <unordered_map>
+
 Graph::Graph() {}
 
+Graph::~Graph() {
+    for (auto* airport : adjacencyList) {
+        delete airport;
+    }
+    adjacencyList.clear();
+}
 
 void Graph::addAirport(const string& code) {
     if (!airportExists(code)) {
-        AirportNode newAirport(code);
-        Node node = { newAirport, {} };
-        adjacencyList.push_back(node);
+        AirportNode* newAirport = new AirportNode(code);
+        adjacencyList.push_back(newAirport);
     }
 }
 
 bool Graph::airportExists(string code) const {
-    for (const auto& node : adjacencyList) {
-        if (node.airport.getCode() == code) return true;
+    for (const auto& airport : adjacencyList) {
+        if (airport->getCode() == code)
+            return true;
     }
     return false;
 }
 
-int Graph::getAirportIndex(string code) const {
-    for (int i = 0; i < adjacencyList.size(); ++i) {
-        if (adjacencyList[i].airport.getCode() == code)
-            return i;
+AirportNode* Graph::getAirport(string code) const {
+    for (const auto& airport : adjacencyList) {
+        if (airport->getCode() == code)
+            return airport;
     }
-    return -1;
+    return nullptr;
 }
 
 void Graph::addFlight(string origin, string destination, double distance, double cost) {
-    int originIndex = getAirportIndex(origin);
-    int destIndex = getAirportIndex(destination);
+    AirportNode* originNode = getAirport(origin);
+    AirportNode* destNode = getAirport(destination);
 
-    if (originIndex != -1 && destIndex != -1) {
-        Edge edge(destIndex, distance, cost);
-        adjacencyList[originIndex].edges.push_back(edge);
+    if (originNode && destNode) {
+        Edge* edge = new Edge(destNode, distance, cost);
+        originNode->addEdge(edge);
     } else {
-        cout << "Flight not added: " << origin << " or " << destination << " not found." << endl;
+        cout << "Flight not added: " << origin << " or " << destination << " not found.\n";
     }
 }
 
 void Graph::displayGraph() const {
-    for (int i = 0; i < adjacencyList.size(); ++i) {
-        cout << adjacencyList[i].airport.getCode() << " -> ";
-        for (auto& edge : adjacencyList[i].edges) {
-            cout << "(" << adjacencyList[edge.to].airport.getCode()
-                 << ", " << edge.distance << " mi, $" << edge.cost << ") ";
+    for (const auto& airport : adjacencyList) {
+        cout << airport->getCode() << " -> ";
+        for (Edge* edge : airport->getEdges()) {
+            cout << "(" << edge->to->getCode()
+                 << ", " << edge->distance << " mi, $" << edge->cost << ") ";
         }
         cout << endl;
     }
 }
 
 void Graph::dijkstra(string start, string end, bool useCost) {
-    int n = adjacencyList.size();
-    int startIndex = getAirportIndex(start);
-    int endIndex = getAirportIndex(end);
+    AirportNode* startNode = getAirport(start);
+    AirportNode* endNode = getAirport(end);
 
-    if (startIndex == -1 || endIndex == -1) {
+    if (!startNode || !endNode) {
         cout << "Start or end airport does not exist.\n";
         return;
     }
 
-    vector<double> dist(n, numeric_limits<double>::infinity());
-    vector<int> prev(n, -1);
-    vector<bool> visited(n, false);
+    // Reset visited and costs
+    unordered_map<AirportNode*, double> dist;
+    unordered_map<AirportNode*, AirportNode*> prev;
+    unordered_map<AirportNode*, bool> visited;
 
-    dist[startIndex] = 0;
+    for (auto* airport : adjacencyList) {
+        dist[airport] = numeric_limits<double>::infinity();
+        prev[airport] = nullptr;
+        visited[airport] = false;
+    }
 
-    for (int i = 0; i < n; ++i) {
-        // Find unvisited node with smallest dist
-        int u = -1;
+    dist[startNode] = 0;
+
+    while (true) {
+        AirportNode* current = nullptr;
         double minDist = numeric_limits<double>::infinity();
-        for (int j = 0; j < n; ++j) {
-            if (!visited[j] && dist[j] < minDist) {
-                minDist = dist[j];
-                u = j;
+
+        for (auto* airport : adjacencyList) {
+            if (!visited[airport] && dist[airport] < minDist) {
+                minDist = dist[airport];
+                current = airport;
             }
         }
 
-        if (u == -1) break; // all reachable nodes visited
-        visited[u] = true;
+        if (!current) break;
+        visited[current] = true;
 
-        // Relax neighbors
-        for (const Edge& edge : adjacencyList[u].edges) {
-            int v = edge.to;
-            double weight = useCost ? edge.cost : edge.distance;
-            if (dist[u] + weight < dist[v]) {
-                dist[v] = dist[u] + weight;
-                prev[v] = u;
+        for (Edge* edge : current->getEdges()) {
+            AirportNode* neighbor = edge->to;
+            double weight = useCost ? edge->cost : edge->distance;
+            if (dist[current] + weight < dist[neighbor]) {
+                dist[neighbor] = dist[current] + weight;
+                prev[neighbor] = current;
             }
         }
     }
 
-    if (dist[endIndex] == numeric_limits<double>::infinity()) {
+    if (dist[endNode] == numeric_limits<double>::infinity()) {
         cout << "No path from " << start << " to " << end << ".\n";
         return;
     }
 
-    // Reconstruct path
-    stack<int> path;
-    for (int at = endIndex; at != -1; at = prev[at])
+    stack<AirportNode*> path;
+    for (AirportNode* at = endNode; at != nullptr; at = prev[at]) {
         path.push(at);
+    }
 
     cout << "Shortest path from " << start << " to " << end << ":\n";
     while (!path.empty()) {
-        cout << adjacencyList[path.top()].airport.getCode();
+        cout << path.top()->getCode();
         path.pop();
         if (!path.empty()) cout << " -> ";
     }
 
-    cout << "\nTotal " << (useCost ? "cost" : "distance") << ": " << dist[endIndex] << "\n";
+    cout << "\nTotal " << (useCost ? "cost" : "distance") << ": " << dist[endNode] << "\n";
 }

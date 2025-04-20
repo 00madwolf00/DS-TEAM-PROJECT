@@ -17,8 +17,8 @@ private:
     vector<Edge*> outgoingEdges;
 
 public:
-    AirportNode(string& code, string& city, string& state);
-
+    AirportNode(string& code, string& city, string& state)
+        : code(code), city(city), state(state), visited(false) {}
     //constructor
     AirportNode(string code) : code(code), visited(false) {}
     
@@ -45,9 +45,14 @@ public:
     void setVisited(bool v){
         visited = v;
     }
+    void setCity(const string& c) {
+         city = c; }
 
+     void setState(const string& s) {
+         state = s; }
     // Edge
-
+    void addEdge(Edge* edge) { outgoingEdges.push_back(edge); }
+    vector<Edge*>& getEdges() { return outgoingEdges; }
 
     bool operator==(const AirportNode& other){
         return code == other.code;

@@ -13,15 +13,16 @@ private:
         vector<Edge> edges;
     };
 
-    vector<Node> adjacencyList;
+    vector<AirportNode*> adjacencyList;
 
 public:
     Graph();
+    ~Graph();
 
     void addAirport(const string& code) ;
     void addFlight(string origin, string destination, double distance, double cost);
 
-    int getAirportIndex(string code) const;
+    AirportNode* getAirport(string code) const;
     bool airportExists(string code) const;
 
     void displayGraph() const;

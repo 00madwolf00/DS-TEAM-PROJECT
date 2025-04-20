@@ -6,11 +6,11 @@ using namespace std;
 
 class Edge {
 public:
-    int to;
+    AirportNode* to;
     double distance;
     double cost;
 
-    Edge(int destIndex, double dist, double cost);
+    Edge(AirportNode*dest, double dist, double cost);
 };
 
 #endif //EDGE_H
