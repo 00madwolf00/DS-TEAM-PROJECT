@@ -12,76 +12,48 @@
 
 using namespace std;
 
-bool CSVReader::loadAirportsCSV(const std::string& filename, Graph<string>& graph){
+bool CSVReader::loadAirportsCSV(const string& filename, Graph& graph) {
     ifstream file(filename);
     
-    if(!file.is_open()){
+    if (!file.is_open()) {
         cerr << "Error: Could not open file " << filename << endl;
         return false;
     }
     
     string line;
-    
-    getline(file, line);
-    
+    getline(file, line); // skip header
     int lineCount = 0;
-    
-    while(getline(file, line)){
+
+    while (getline(file, line)) {
         lineCount++;
 
         stringstream ss(line);
         string origin, destination, originCity, destCity, distStr, costStr;
-        
+
         getline(ss, origin, ',');
         getline(ss, destination, ',');
         getline(ss, originCity, ',');
         getline(ss, destCity, ',');
         getline(ss, distStr, ',');
         getline(ss, costStr, ',');
-        
-        string originState = "";
-        size_t commaPos = originCity.find_last_of(',');
 
-        if(commaPos != string::npos){
-            originState = originCity.substr(commaPos + 2); // +2 to skip comma and space
-            originCity = originCity.substr(0, commaPos);
-        }
-        
-        string destState = "";
-        commaPos = destCity.find_last_of(',');
-
-        if(commaPos != string::npos){
-            destState = destCity.substr(commaPos + 2);
-            destCity = destCity.substr(0, commaPos);
-        }
-        
         int distance = 0;
         int cost = 0;
-        
-        try{
+
+        try {
             distance = stoi(distStr);
             cost = stoi(costStr);
-        }catch(const exception& e){
+        } catch (const exception& e) {
             cerr << "Error reading line " << lineCount << ": " << e.what() << endl;
             continue;
         }
-        
-        Vertex<string> v_origin(origin);
-        Vertex<string> v_dest(destination);
-        
-        graph.insert_vertex(v_origin);
-        graph.insert_vertex(v_dest);
-        
-        graph.add_airport_info(origin, originCity, originState);
-        graph.add_airport_info(destination, destCity, destState);
-        
-        try{
-            graph.add_edge(v_origin, v_dest, distance, cost);
-        }catch(const string& e){
-            cerr << "Error adding the flight: " << e << endl;
-        }
+
+        // Add airports and flights
+        graph.addAirport(origin);
+        graph.addAirport(destination);
+        graph.addFlight(origin, destination, distance, cost);
     }
-    
+
     file.close();
     cout << "Loaded " << lineCount << " flights from " << filename << endl;
     return true;

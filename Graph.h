@@ -25,6 +25,10 @@ public:
     bool airportExists(string code) const;
 
     void displayGraph() const;
+    void dijkstra(string start, string end, bool useCost);
+
+    void loadFromCSV(const string& filename);
+
     
 };
 
