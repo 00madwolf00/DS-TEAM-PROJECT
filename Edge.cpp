@@ -1,3 +1,10 @@
+/*
+* Edge.cpp
+* Names: Allicyan Chin, Jaheem Clayton, Jasmine Heymann
+* Course: COP-3415
+* Last Modified: 04/20/2025
+*/
+
 #include "Edge.h"
 
 
