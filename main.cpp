@@ -14,7 +14,7 @@ using namespace std;
 int main(){
     Graph g;
 
-    CSVReader::loadAirportsCSV("airports.csv", g);
+    CSVReader::loadAirportsCSV("airports.txt", g);
 
     // Display the graph
     g.displayGraph();
