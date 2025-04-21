@@ -13,6 +13,19 @@ private:
         vector<Edge> edges;
     };
 
+    struct UndirectedEdge{
+        AirportNode* from;
+        AirportNode* to;
+
+        double cost;
+
+        UndirectedEdge(AirportNode* f, AirportNode* t, double c) : from(f), to(t), cost(c) {}
+
+        bool operator<(const UndirectedEdge& other){
+            return cost < other.cost;
+        }
+    };
+
     vector<AirportNode*> adjacencyList;
 
 public:
@@ -31,10 +44,11 @@ public:
     void dijkstra(string start, string end, bool useCost);
     void dijkstraToState(const string& originCode, const string& stateCode, bool useCost);
 
-
     void loadFromCSV(const string& filename);
 
-    
+    void makeUndirectedGraph();
+    void primMST();
+    void kruskalMST();
 };
 
 #endif
