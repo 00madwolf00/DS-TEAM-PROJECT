@@ -12,6 +12,7 @@ using namespace std;
 #include "AirportNode.h"
 #include "Edge.h"
 #include <vector>
+#include <unordered_set>
 
 class Graph {
 private:
@@ -20,7 +21,20 @@ private:
         vector<Edge> edges;
     };
 
+    struct UndirectedEdge{
+        AirportNode* from;
+        AirportNode* to;
+        double cost;
+
+        UndirectedEdge(AirportNode* f, AirportNode* t, double c) : from(f), to(t), cost(c) {}
+
+        bool operator<(const UndirectedEdge& other) const {
+            return cost < other.cost;
+        }
+    };
+
     vector<AirportNode*> adjacencyList;
+    vector<UndirectedEdge> undirectedEdges;
 
 public:
     Graph();
@@ -28,7 +42,7 @@ public:
     void shortestPathWithStops(string originCode, string destCode, int stops, bool useCost);
     void displayConnectionStats() const;
 
-    void addAirport(const string& code) ;
+    void addAirport(const string& code);
     void addFlight(string origin, string destination, double distance, double cost);
 
     AirportNode* getAirport(string code) const;
@@ -37,11 +51,12 @@ public:
     void displayGraph() const;
     void dijkstra(string start, string end, bool useCost);
     void dijkstraToState(const string& originCode, const string& stateCode, bool useCost);
-
-
+    
     void loadFromCSV(const string& filename);
 
-    
+    void createUndirectedGraph();
+    void primMST();
+    void kruskalMST();
 };
 
 #endif
