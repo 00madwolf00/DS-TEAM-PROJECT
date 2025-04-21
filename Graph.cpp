@@ -6,6 +6,8 @@
 #include <unordered_map>
 #include <functional>
 #include <algorithm>
+#include <unordered_set>
+
 
 Graph::Graph() {}
 
@@ -287,4 +289,111 @@ void Graph::displayConnectionStats() const {
     for (const Stat& s : result) {
         cout << s.code << "\t" << s.inbound << "\t" << s.outbound << "\t\t" << s.total() << "\n";
     }
+}
+
+void Graph::primMST() const {
+    if (adjacencyList.empty()) {
+        cout << "Graph is empty.\n";
+        return;
+    }
+
+    struct Entry {
+        AirportNode* from;
+        AirportNode* to;
+        double cost;
+
+        bool operator>(const Entry& other) const {
+            return cost > other.cost;
+        }
+    };
+
+    unordered_set<AirportNode*> visited;
+    priority_queue<Entry, vector<Entry>, greater<Entry>> pq;
+
+    AirportNode* start = adjacencyList.front();  // start anywhere
+    visited.insert(start);
+
+    // Push all outgoing edges from start
+    for (Edge* edge : start->getEdges()) {
+        pq.push({ start, edge->to, edge->cost });
+    }
+
+    double totalCost = 0;
+    vector<Entry> mstEdges;
+
+    while (!pq.empty()) {
+        Entry current = pq.top();
+        pq.pop();
+
+        if (visited.count(current.to)) continue;
+
+        visited.insert(current.to);
+        totalCost += current.cost;
+        mstEdges.push_back(current);
+
+        for (Edge* edge : current.to->getEdges()) {
+            if (!visited.count(edge->to)) {
+                pq.push({ current.to, edge->to, edge->cost });
+            }
+        }
+    }
+
+    if (mstEdges.size() != adjacencyList.size() - 1) {
+        cout << "Graph is not fully connected. MST is a spanning forest.\n";
+    }
+
+    cout << "\n=== Prim's MST ===\n";
+    for (const Entry& edge : mstEdges) {
+        cout << edge.from->getCode() << " -> " << edge.to->getCode()
+             << " ($" << edge.cost << ")\n";
+    }
+
+    cout << "Total MST cost: $" << totalCost << "\n";
+}
+
+
+
+Graph* Graph::createUndirectedGraph() const {
+    Graph* undirected = new Graph();
+
+    // Step 1: Add all airports
+    for (AirportNode* airport : adjacencyList) {
+        undirected->addAirport(airport->getCode());
+        AirportNode* copy = undirected->getAirport(airport->getCode());
+        copy->setCity(airport->getCity());
+        copy->setState(airport->getState());
+    }
+
+    // Step 2: Add bidirectional edges
+    unordered_set<string> added; // to avoid double adding
+
+    for (AirportNode* airport : adjacencyList) {
+        string origin = airport->getCode();
+
+        for (Edge* edge : airport->getEdges()) {
+            string dest = edge->to->getCode();
+            string pairKey = origin < dest ? origin + "-" + dest : dest + "-" + origin;
+
+            if (added.count(pairKey)) continue;
+
+            // Check if reverse edge exists
+            bool reverseFound = false;
+            for (Edge* revEdge : edge->to->getEdges()) {
+                if (revEdge->to == airport) {
+                    reverseFound = true;
+
+                    double lowerCost = min(edge->cost, revEdge->cost);
+                    double avgDistance = (edge->distance + revEdge->distance) / 2.0;
+
+                    undirected->addFlight(origin, dest, avgDistance, lowerCost);
+                    undirected->addFlight(dest, origin, avgDistance, lowerCost); // symmetric
+
+                    added.insert(pairKey);
+                    break;
+                }
+            }
+        }
+    }
+
+    return undirected;
 }

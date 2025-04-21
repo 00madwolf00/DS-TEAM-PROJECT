@@ -6,6 +6,7 @@ using namespace std;
 #include "Edge.h"
 #include <vector>
 
+
 class Graph {
 private:
     struct Node {
@@ -30,6 +31,9 @@ public:
     void displayGraph() const;
     void dijkstra(string start, string end, bool useCost);
     void dijkstraToState(const string& originCode, const string& stateCode, bool useCost);
+    void primMST() const;
+
+    Graph* createUndirectedGraph() const;
 
 
     void loadFromCSV(const string& filename);

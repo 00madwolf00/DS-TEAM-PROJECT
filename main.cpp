@@ -26,5 +26,16 @@ int main() {
      
      g.displayConnectionStats();
 
+     cout << "\n=== Generating Undirected Graph Gᵤ ===\n";
+Graph* undirected = g.createUndirectedGraph();
+cout << "Undirected graph has " << undirected->adjacencyList.size() << " airports.\n";
+
+
+cout << "\n=== Displaying Undirected Graph ===\n";
+
+
+
+undirected->primMST();
+
     return 0;
 }
